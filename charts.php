@@ -9,33 +9,33 @@
 #
 ###---AB GEHT'S!---###
 #
-$action = $_GET['action'];
-if (!$action) $action = $_POST['action'];
-$id = $_GET['id'];
+$action = (!$_POST['action']) ? $_GET['action'] : $_POST['action'];
 
 #
 ###---VOTE---###
 #
-if ($id)
+if ($_GET['id'])
 {
  $charts = file("charts.dat");
- for ($i=0; $i<count($charts); $i++)
+ $size = count($charts);
+ for ($i=0; $i<$size; $i++)
  {
   $charts2 = explode("#", $charts[$i]);
-  if ($i == ($id-1)) $charts2[0]++;
-  $towrite = $towrite . implode("#", $charts2);
+  if ($i == ($_GET['id']-1)) $charts2[0]++;
+  $towrite .= implode("#", $charts2);
  }
  $temp = fopen("charts.dat", "w");
  fwrite($temp, $towrite);
  fclose($temp);
- die("<meta http-equiv=\"refresh\" content=\"0; url=index.php\">");
+ die("<meta http-equiv=\"refresh\" content=\"0; url=" . $_SERVER['PHP_SELF'] . "\">");
 }
 
 #
 ###---ADMIN---###
 #
-if ($action == "admin")
+switch ($action)
 {
+ case "admin":
  if (file_exists("charts.dat")) die("<b>ERROR:</b> \"charts.dat\" existiert bereits!");
  ?>
 
@@ -47,28 +47,29 @@ Zu votenes in der Box angeben. Jede Zeile steht für etwas votebars! <font color=
 </form>
 
  <?php
-}
+ break;
 
 #
 ###---ERSTELLEN---###
 #
-elseif ($action == "make")
-{
+ case "make":
  echo("Daten werden erstellt...<br>\n");
  $array = explode("\n", $_POST['text']);
- for ($i=0; $i<count($array); $i++) $towrite = $towrite . "0#" . $array[$i] . "\n";
+ $size = count($array);
+ for ($i=0; $i<$size; $i++) $towrite .= "0#" . $array[$i] . "\n";
  $temp = fopen("charts.dat", "w");
  fwrite($temp, $towrite);
  fclose($temp);
  ?>
-Daten erstellt! Weiterleiten...<br>
-<meta http-equiv="refresh" content="2; url=charts.php">
- <?php
-}
 
-else
-{
- if (!file_exists("charts.dat")) die("<b>ERROR:</b> Keine \"charts.dat\" gefunden! Bitte <a href=\"charts.php?action=admin\">hier</a> anlegen!");
+Daten erstellt! <a href="<?=$_SERVER['PHP_SELF']?>">Weiterleiten...</a><br>
+<meta http-equiv="refresh" content="2; url=<?=$_SERVER['PHP_SELF']?>">
+
+ <?php
+ break;
+
+ default:
+ if (!file_exists("charts.dat")) die("<b>ERROR:</b> Keine \"charts.dat\" gefunden! Bitte <a href=\"" . $_SERVER['PHP_SELF'] . "?action=admin\">hier</a> anlegen!");
  else
  ?>
 
@@ -82,7 +83,8 @@ else
 ###---PLÄTZE CHECK---###
 #
  $array = file("charts.dat");
- for ($i=0; $i<count($array); $i++)
+ $size = count($array);
+ for ($i=0; $i<$size; $i++)
  {
   $array2 = explode("#", $array[$i]);
   $davor = $array2[0];
@@ -93,16 +95,16 @@ else
    for ($j=0; $j<$x; $j++)
    {
     $temp_array2 = explode("#", $temp_array[$j]);
-    $temp_towrite = $temp_towrite . implode("#", $temp_array2);
+    $temp_towrite .= implode("#", $temp_array2);
    }
    $temp_array2 = explode("#", $temp_array[$x+1]);
-   $temp_towrite = $temp_towrite . implode("#", $temp_array2);
+   $temp_towrite .= implode("#", $temp_array2);
    $temp_array2 = explode("#", $temp_array[$x]);
-   $temp_towrite = $temp_towrite . implode("#", $temp_array2);
+   $temp_towrite .= implode("#", $temp_array2);
    for ($j=$x+2; $j<count($temp_array); $j++)
    {
     $temp_array2 = explode("#", $temp_array[$j]);
-    $temp_towrite = $temp_towrite . implode("#", $temp_array2);
+    $temp_towrite .= implode("#", $temp_array2);
    }
    $temp_temp = fopen("charts.dat", "w");
    fwrite($temp_temp, $temp_towrite);
@@ -117,19 +119,21 @@ else
 ###---LISTE ZEIGEN---###
 #
  $charts = file("charts.dat");
- for ($i=0; $i<count($charts); $i++)
+ $size = count($charts);
+ for ($i=0; $i<$size; $i++)
  {
   $charts2 = explode("#", $charts[$i]);
-  echo("  <tr><td>" . ($i+1) . "</td><td>" . $charts2[1] . "</td><td>" . $charts2[0] . "</td><td><a href=\"charts.php?id=" . ($i+1) . "\">Vote!</a></tr>\n");
+  echo("  <tr><td>" . ($i+1) . "</td><td>" . $charts2[1] . "</td><td>" . $charts2[0] . "</td><td><a href=\"" . $_SERVER['PHP_SELF'] . "?id=" . ($i+1) . "\">Vote!</a></tr>\n");
  }
  ?>
 
 </table><br>
 
 <!-- DO NOT REMOVE THIS COPYRIGHT!!! -->
-<font size="2">&copy; 2004 by <a href="mailto:chrissyx(at)chrissyx.com">Chrissyx</a></font><br><br>
+<font size="1">&copy; 2004, 2005 by <a href="mailto:chrissyx(at)chrissyx.com">Chrissyx</a></font><br><br>
 <!-- DO NOT REMOVE THIS COPYRIGHT!!! -->
 
  <?php
+ break;
 }
 ?>
